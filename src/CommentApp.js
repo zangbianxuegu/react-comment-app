@@ -13,6 +13,19 @@ class CommentApp extends Component {
       comments: [],
     }
   }
+  componentWillMount() {
+    this._loadComments()
+  }
+  _loadComments() {
+    let comments = localStorage.getItem('comments')
+    if (comments) {
+      comments = JSON.parse(comments)
+      this.setState({ comments })
+    }
+  }
+  _saveComments(comments) {
+    localStorage.setItem('comments', JSON.stringify(comments))
+  }
   handleHeader() {
     this.setState({
       isShowHeader: !this.state.isShowHeader,
@@ -27,10 +40,18 @@ class CommentApp extends Component {
     if (!comment) return
     if (!comment.username) return alert('请输入用户名')
     if (!comment.content) return alert('请输入评论内容')
-    this.state.comments.push(comment)
+    let comments = this.state.comments
+    comments.push(comment)
     this.setState({
-      comments: this.state.comments,
+      comments,
     })
+    this._saveComments(comments)
+  }
+  handleDeleteComment(index) {
+    const comments = this.state.comments
+    comments.splice(index, 1)
+    this.setState({ comments })
+    this._saveComments(comments)
   }
   render() {
     return (
@@ -43,12 +64,13 @@ class CommentApp extends Component {
         </div>
         <div>
           {this.state.isShowClock ? <Clock /> : null}
-          <button onClick={this.handleClock.bind(this)}>
-            显示或隐藏时钟
-          </button>
+          <button onClick={this.handleClock.bind(this)}>显示或隐藏时钟</button>
         </div>
         <CommentInput onSubmit={this.handleSubmitCommet.bind(this)} />
-        <CommentList comments={this.state.comments} />
+        <CommentList
+          comments={this.state.comments}
+          onDeleteComment={this.handleDeleteComment.bind(this)}
+        />
       </div>
     )
   }
